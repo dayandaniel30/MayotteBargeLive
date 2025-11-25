@@ -1,45 +1,20 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Platform } from "react-native";
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { SearchBar } from "@/components/SearchBar";
 import { AlertBanner } from "@/components/AlertBanner";
+import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
-import { Colors, Spacing } from "@/constants/theme";
+import { Colors, Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { TERMINALS } from "@/utils/schedules";
 import { getCurrentAlert, getAlertSeverityType } from "@/utils/alerts";
 import { getSimulatedFerries, FerryPosition } from "@/utils/ferrySimulation";
-
-const MAYOTTE_REGION = {
-  latitude: -12.7847,
-  longitude: 45.2478,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
-};
-
-const MAP_STYLE = [
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#A8D5E2" }],
-  },
-  {
-    featureType: "landscape",
-    elementType: "geometry",
-    stylers: [{ color: "#F0E6D2" }],
-  },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: "#D4C5A9" }],
-  },
-];
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 
 export default function MapScreen() {
   const { theme } = useTheme();
   const { headerHeight, tabBarHeight } = useScreenInsets();
-  const mapRef = useRef<MapView>(null);
   const [currentAlert, setCurrentAlert] = useState(getCurrentAlert());
   const [ferries, setFerries] = useState<FerryPosition[]>([]);
 
@@ -58,69 +33,101 @@ export default function MapScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  const polylineCoordinates = [
-    TERMINALS.DZAOUDZI.coordinates,
-    TERMINALS.MAMOUDZOU.coordinates,
-  ];
-
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
-        initialRegion={MAYOTTE_REGION}
-        customMapStyle={MAP_STYLE}
-        showsUserLocation
-        showsMyLocationButton={false}
-        showsCompass={false}
-      >
-        <Marker
-          coordinate={TERMINALS.DZAOUDZI.coordinates}
-          title={TERMINALS.DZAOUDZI.name}
-          description={TERMINALS.DZAOUDZI.shortName}
-        >
-          <View style={styles.markerContainer}>
-            <View style={[styles.marker, { backgroundColor: theme.primary }]}>
-              <Feather name="anchor" size={20} color="#FFFFFF" />
+      <ScreenScrollView>
+        <View style={[styles.mapCard, { backgroundColor: theme.card }]}>
+          <ThemedText style={[styles.mapTitle, Typography.h2]}>
+            Statut des liaisons
+          </ThemedText>
+
+          {/* Ferry Route Visualization */}
+          <View style={styles.routeContainer}>
+            {/* Dzaoudzi Terminal */}
+            <View style={styles.terminalSection}>
+              <View style={[styles.terminalIcon, { backgroundColor: theme.primary }]}>
+                <Feather name="anchor" size={24} color="#FFFFFF" />
+              </View>
+              <ThemedText style={styles.terminalName}>
+                {TERMINALS.DZAOUDZI.shortName}
+              </ThemedText>
+              <ThemedText style={[styles.terminalFullName, { color: theme.textSecondary }]}>
+                {TERMINALS.DZAOUDZI.name}
+              </ThemedText>
+            </View>
+
+            {/* Route Line with Ferry Position */}
+            <View style={styles.routeLine}>
+              <View style={[styles.dottedLine, { backgroundColor: theme.primary }]} />
+              
+              {ferries.length > 0 ? (
+                <View
+                  style={[
+                    styles.ferryIndicator,
+                    {
+                      left: `${ferries[0].progress * 100}%`,
+                      backgroundColor: theme.warning,
+                    },
+                  ]}
+                >
+                  <Feather name="navigation" size={14} color="#FFFFFF" />
+                </View>
+              ) : null}
+            </View>
+
+            {/* Mamoudzou Terminal */}
+            <View style={styles.terminalSection}>
+              <View style={[styles.terminalIcon, { backgroundColor: theme.primary }]}>
+                <Feather name="anchor" size={24} color="#FFFFFF" />
+              </View>
+              <ThemedText style={styles.terminalName}>
+                {TERMINALS.MAMOUDZOU.shortName}
+              </ThemedText>
+              <ThemedText style={[styles.terminalFullName, { color: theme.textSecondary }]}>
+                {TERMINALS.MAMOUDZOU.name}
+              </ThemedText>
             </View>
           </View>
-        </Marker>
 
-        <Marker
-          coordinate={TERMINALS.MAMOUDZOU.coordinates}
-          title={TERMINALS.MAMOUDZOU.name}
-          description={TERMINALS.MAMOUDZOU.shortName}
-        >
-          <View style={styles.markerContainer}>
-            <View style={[styles.marker, { backgroundColor: theme.primary }]}>
-              <Feather name="anchor" size={20} color="#FFFFFF" />
-            </View>
-          </View>
-        </Marker>
-
-        <Polyline
-          coordinates={polylineCoordinates}
-          strokeColor={theme.primary}
-          strokeWidth={3}
-          lineDashPattern={[10, 5]}
-        />
-
-        {ferries.map((ferry) => (
-          <Marker
-            key={ferry.id}
-            coordinate={ferry.coordinates}
-            title={ferry.name}
-            description={`En route vers ${ferry.direction === "dzaoudzi-mamoudzou" ? "Mamoudzou" : "Dzaoudzi"} - Arrivée: ${ferry.arrivalTime}`}
-          >
-            <View style={styles.ferryMarkerContainer}>
-              <View style={[styles.ferryMarker, { backgroundColor: theme.warning }]}>
-                <Feather name="navigation" size={16} color="#FFFFFF" />
+          {/* Ferry Status */}
+          {ferries.length > 0 ? (
+            <View style={[styles.ferryStatus, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name="info" size={18} color={theme.warning} style={styles.infoIcon} />
+              <View style={styles.ferryStatusText}>
+                <ThemedText style={styles.ferryStatusTitle}>
+                  Barge en route
+                </ThemedText>
+                <ThemedText style={[styles.ferryStatusDetail, { color: theme.textSecondary }]}>
+                  Destination: {ferries[0].direction === "dzaoudzi-mamoudzou" ? "Mamoudzou" : "Dzaoudzi"}
+                </ThemedText>
+                <ThemedText style={[styles.ferryStatusDetail, { color: theme.textSecondary }]}>
+                  Arrivée: {ferries[0].arrivalTime}
+                </ThemedText>
               </View>
             </View>
-          </Marker>
-        ))}
-      </MapView>
+          ) : (
+            <View style={[styles.ferryStatus, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name="check-circle" size={18} color={theme.primary} style={styles.infoIcon} />
+              <View style={styles.ferryStatusText}>
+                <ThemedText style={styles.ferryStatusTitle}>
+                  Aucune barge en route
+                </ThemedText>
+                <ThemedText style={[styles.ferryStatusDetail, { color: theme.textSecondary }]}>
+                  Consultez l'onglet Horaires pour les prochains départs
+                </ThemedText>
+              </View>
+            </View>
+          )}
+
+          {/* Info Box */}
+          <View style={[styles.infoBox, { backgroundColor: theme.backgroundSecondary }]}>
+            <Feather name="map-pin" size={18} color={theme.primary} />
+            <ThemedText style={[styles.infoBoxText, { color: theme.textSecondary }]}>
+              Trajet: Petite-Terre ↔ Grande-Terre (15-20 min)
+            </ThemedText>
+          </View>
+        </View>
+      </ScreenScrollView>
 
       {currentAlert ? (
         <View
@@ -156,32 +163,93 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
+  mapCard: {
+    margin: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.lg,
+  },
+  mapTitle: {
+    marginBottom: Spacing.lg,
+  },
+  routeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: Spacing.xl,
+  },
+  terminalSection: {
+    alignItems: "center",
     flex: 1,
   },
-  markerContainer: {
-    alignItems: "center",
-  },
-  marker: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  terminalIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 3,
-    borderColor: "#FFFFFF",
+    marginBottom: Spacing.sm,
   },
-  ferryMarkerContainer: {
-    alignItems: "center",
+  terminalName: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: Spacing.xs,
   },
-  ferryMarker: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  terminalFullName: {
+    fontSize: 12,
+  },
+  routeLine: {
+    flex: 1,
+    height: 3,
+    backgroundColor: "transparent",
+    marginHorizontal: Spacing.md,
+    position: "relative",
+  },
+  dottedLine: {
+    flex: 1,
+    height: 2,
+  },
+  ferryIndicator: {
+    position: "absolute",
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    top: -10,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
+  },
+  ferryStatus: {
+    flexDirection: "row",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.xs,
+    marginBottom: Spacing.lg,
+    alignItems: "flex-start",
+    gap: Spacing.md,
+  },
+  infoIcon: {
+    marginTop: Spacing.xs,
+  },
+  ferryStatusText: {
+    flex: 1,
+  },
+  ferryStatusTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: Spacing.xs,
+  },
+  ferryStatusDetail: {
+    fontSize: 12,
+    marginBottom: Spacing.xs,
+  },
+  infoBox: {
+    flexDirection: "row",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.xs,
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  infoBoxText: {
+    fontSize: 13,
+    flex: 1,
   },
   alertContainer: {
     position: "absolute",
