@@ -1,33 +1,272 @@
-import React from "react";
-import { StyleSheet } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, TextInput } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { ThemedText } from '@/components/ThemedText';
+import { useTheme } from '@/hooks/useTheme';
+import { Spacing, BorderRadius, Typography } from '@/constants/theme';
+import { ScreenKeyboardAwareScrollView } from '@/components/ScreenKeyboardAwareScrollView';
+import { User } from '@/utils/auth';
 
-import MainTabNavigator from "@/navigation/MainTabNavigator";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+interface CheckoutScreenProps {
+  user: User;
+  ticketType: 'pedestrian' | 'vehicle' | 'motorcycle';
+  price: number;
+  onCheckout: (cardDetails: any) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+}
 
-export default function App() {
+export default function CheckoutScreen({ user, ticketType, price, onCheckout, onCancel, isLoading }: CheckoutScreenProps) {
+  const { theme } = useTheme();
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryMonth, setExpiryMonth] = useState('');
+  const [expiryYear, setExpiryYear] = useState('');
+  const [cvc, setCvc] = useState('');
+  const [error, setError] = useState('');
+
+  const getTicketLabel = () => {
+    switch (ticketType) {
+      case 'pedestrian': return 'Billet Piéton';
+      case 'vehicle': return 'Billet Véhicule';
+      case 'motorcycle': return 'Billet Moto';
+      default: return 'Billet';
+    }
+  };
+
+  const handleCheckout = async () => {
+    setError('');
+    
+    if (!cardNumber || !expiryMonth || !expiryYear || !cvc) {
+      setError('Complétez tous les champs de paiement');
+      return;
+    }
+
+    if (cardNumber.length < 13 || cvc.length < 3) {
+      setError('Informations de carte invalides');
+      return;
+    }
+
+    try {
+      await onCheckout({ cardNumber, expiryMonth, expiryYear, cvc });
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
   return (
-  <ErrorBoundary>
-    <SafeAreaProvider>
-        <GestureHandlerRootView style={styles.root}>
-          <KeyboardProvider>
-            <NavigationContainer>
-              <MainTabNavigator />
-            </NavigationContainer>
-            <StatusBar style="auto" />
-          </KeyboardProvider>
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
-  </ErrorBoundary>
+    <ScreenKeyboardAwareScrollView>
+      <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
+        <View style={[styles.header, { backgroundColor: theme.card }]}>
+          <ThemedText style={[styles.headerTitle, Typography.h2]}>
+            Achat de billet
+          </ThemedText>
+          <Pressable onPress={onCancel}>
+            <Feather name="x" size={24} color={theme.text} />
+          </Pressable>
+        </View>
+
+        {/* Ticket Summary */}
+        <View style={[styles.summaryBox, { backgroundColor: theme.card }]}>
+          <View style={styles.summaryRow}>
+            <ThemedText style={[styles.label, { color: theme.textSecondary }]}>
+              Billet
+            </ThemedText>
+            <ThemedText style={styles.value}>
+              {getTicketLabel()}
+            </ThemedText>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+          <View style={styles.summaryRow}>
+            <ThemedText style={[styles.label, { color: theme.textSecondary }]}>
+              Passager
+            </ThemedText>
+            <ThemedText style={styles.value}>
+              {user.firstName} {user.lastName}
+            </ThemedText>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+          <View style={styles.summaryRow}>
+            <ThemedText style={[styles.label, { color: theme.textSecondary }]}>
+              Prix
+            </ThemedText>
+            <ThemedText style={[styles.totalPrice, { color: theme.primary }]}>
+              {price}€
+            </ThemedText>
+          </View>
+        </View>
+
+        {error ? (
+          <View style={[styles.errorBox, { backgroundColor: theme.error + '20' }]}>
+            <ThemedText style={[styles.errorText, { color: theme.error }]}>
+              {error}
+            </ThemedText>
+          </View>
+        ) : null}
+
+        {/* Payment Form */}
+        <View style={[styles.formBox, { backgroundColor: theme.card }]}>
+          <ThemedText style={[styles.formTitle, Typography.h3]}>
+            Informations de paiement
+          </ThemedText>
+
+          <TextInput
+            style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSecondary }]}
+            placeholder="Numéro de carte"
+            placeholderTextColor={theme.textSecondary}
+            value={cardNumber}
+            onChangeText={setCardNumber}
+            keyboardType="numeric"
+            editable={!isLoading}
+            maxLength={19}
+          />
+
+          <View style={styles.row}>
+            <TextInput
+              style={[styles.input, { flex: 1, borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSecondary }]}
+              placeholder="MM"
+              placeholderTextColor={theme.textSecondary}
+              value={expiryMonth}
+              onChangeText={setExpiryMonth}
+              keyboardType="numeric"
+              editable={!isLoading}
+              maxLength={2}
+            />
+            <TextInput
+              style={[styles.input, { flex: 1, borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSecondary, marginLeft: Spacing.md }]}
+              placeholder="YY"
+              placeholderTextColor={theme.textSecondary}
+              value={expiryYear}
+              onChangeText={setExpiryYear}
+              keyboardType="numeric"
+              editable={!isLoading}
+              maxLength={2}
+            />
+          </View>
+
+          <TextInput
+            style={[styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.backgroundSecondary }]}
+            placeholder="CVC"
+            placeholderTextColor={theme.textSecondary}
+            value={cvc}
+            onChangeText={setCvc}
+            keyboardType="numeric"
+            secureTextEntry
+            editable={!isLoading}
+            maxLength={4}
+          />
+
+          <Pressable
+            style={[styles.button, { backgroundColor: theme.primary, opacity: isLoading ? 0.6 : 1 }]}
+            onPress={handleCheckout}
+            disabled={isLoading}
+          >
+            <ThemedText style={styles.buttonText}>
+              {isLoading ? 'Traitement...' : `Payer ${price}€`}
+            </ThemedText>
+          </Pressable>
+        </View>
+
+        <ThemedText style={[styles.securityNote, { color: theme.textSecondary }]}>
+          <Feather name="lock" size={12} /> Paiement sécurisé par Stripe
+        </ThemedText>
+      </View>
+    </ScreenKeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
+    padding: Spacing.lg,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: Spacing.md,
+    marginBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  headerTitle: {
+    flex: 1,
+  },
+  summaryBox: {
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  label: {
+    fontSize: 14,
+  },
+  value: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  totalPrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  divider: {
+    height: 1,
+    marginVertical: Spacing.xs,
+  },
+  formBox: {
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  formTitle: {
+    marginBottom: Spacing.md,
+  },
+  form: {
+    gap: Spacing.md,
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderRadius: BorderRadius.xs,
+    paddingHorizontal: Spacing.md,
+    fontSize: 16,
+    marginBottom: Spacing.md,
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+  },
+  button: {
+    height: 52,
+    borderRadius: BorderRadius.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Spacing.md,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorBox: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.xs,
+    marginBottom: Spacing.md,
+  },
+  errorText: {
+    fontSize: 14,
+  },
+  securityNote: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: Spacing.md,
   },
 });
