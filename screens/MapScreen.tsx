@@ -1,25 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import MapView, { Marker, Polyline } from "react-native-maps";
 import { useNavigation } from "@react-navigation/native";
 import { AlertBanner } from "@/components/AlertBanner";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { TERMINALS } from "@/utils/schedules";
 import { getCurrentAlert, getAlertSeverityType } from "@/utils/alerts";
 import { getSimulatedFerries, FerryPosition } from "@/utils/ferrySimulation";
-
-const DZAOUDZI_COORDS = { latitude: 12.7769, longitude: 45.2937 };
-const MAMOUDZOU_COORDS = { latitude: 12.7835, longitude: 45.2297 };
+import { ScreenScrollView } from "@/components/ScreenScrollView";
 
 export default function MapScreen() {
   const { theme, isDark } = useTheme();
   const { headerHeight, tabBarHeight } = useScreenInsets();
   const navigation = useNavigation<any>();
-  const mapRef = useRef<MapView>(null);
   const [currentAlert, setCurrentAlert] = useState(getCurrentAlert());
   const [ferries, setFerries] = useState<FerryPosition[]>([]);
 
@@ -37,185 +33,358 @@ export default function MapScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  const calculateFerryPosition = (progress: number) => {
-    return {
-      latitude: DZAOUDZI_COORDS.latitude + (MAMOUDZOU_COORDS.latitude - DZAOUDZI_COORDS.latitude) * progress,
-      longitude: DZAOUDZI_COORDS.longitude + (MAMOUDZOU_COORDS.longitude - DZAOUDZI_COORDS.longitude) * progress,
-    };
-  };
+  const ferryPosition = ferries.length > 0 ? ferries[0].progress : null;
 
   return (
     <View style={styles.container}>
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={{
-          latitude: 12.78,
-          longitude: 45.26,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.08,
-        }}
-        mapType={isDark ? "standard" : "standard"}
-        customMapStyle={isDark ? darkMapStyle : lightMapStyle}
-        pitchEnabled={false}
-        rotateEnabled={false}
-        zoomControlEnabled={true}
-      >
-        {/* Route Line */}
-        <Polyline
-          coordinates={[DZAOUDZI_COORDS, MAMOUDZOU_COORDS]}
-          strokeColor={theme.primary}
-          strokeWidth={3}
-          lineDashPattern={[5, 5]}
-        />
+      <ScreenScrollView>
+        <View style={[styles.mapCard, { backgroundColor: theme.card }]}>
+          <ThemedText style={[styles.mapTitle, Typography.h2]}>
+            Statut des liaisons
+          </ThemedText>
 
-        {/* Dzaoudzi Terminal */}
-        <Marker
-          coordinate={DZAOUDZI_COORDS}
-          title={TERMINALS.DZAOUDZI.shortName}
-          description={TERMINALS.DZAOUDZI.name}
-        >
-          <View style={[styles.markerContainer, { backgroundColor: theme.primary }]}>
-            <Feather name="anchor" size={20} color="#FFFFFF" />
-          </View>
-        </Marker>
-
-        {/* Mamoudzou Terminal */}
-        <Marker
-          coordinate={MAMOUDZOU_COORDS}
-          title={TERMINALS.MAMOUDZOU.shortName}
-          description={TERMINALS.MAMOUDZOU.name}
-        >
-          <View style={[styles.markerContainer, { backgroundColor: theme.primary }]}>
-            <Feather name="anchor" size={20} color="#FFFFFF" />
-          </View>
-        </Marker>
-
-        {/* Ferry Position */}
-        {ferries.length > 0 && (
-          <Marker
-            coordinate={calculateFerryPosition(ferries[0].progress)}
-            title="Barge"
-            description={`Destination: ${ferries[0].direction === "dzaoudzi-mamoudzou" ? "Mamoudzou" : "Dzaoudzi"}`}
+          {/* Custom Map Visualization */}
+          <View
+            style={[
+              styles.mapContainer,
+              {
+                backgroundColor: isDark ? "#2a3a4a" : "#e8f4f8",
+                borderColor: theme.border,
+              },
+            ]}
           >
-            <View style={[styles.ferryMarker, { backgroundColor: theme.warning }]}>
-              <Feather name="navigation" size={18} color="#FFFFFF" />
-            </View>
-          </Marker>
-        )}
-      </MapView>
+            {/* Route Path */}
+            <View style={styles.routePath}>
+              {/* Dzaoudzi Terminal */}
+              <View style={styles.terminalMarker}>
+                <View
+                  style={[styles.terminalDot, { backgroundColor: theme.primary }]}
+                >
+                  <Feather name="anchor" size={16} color="#FFFFFF" />
+                </View>
+              </View>
 
-      {/* Info Card */}
-      {ferries.length > 0 && (
-        <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
-          <Feather name="info" size={18} color={theme.warning} style={{ marginRight: Spacing.md }} />
-          <View style={styles.infoTextContainer}>
-            <ThemedText style={styles.infoTitle}>Barge en route</ThemedText>
-            <ThemedText style={[styles.infoDetail, { color: theme.textSecondary }]}>
-              Destination: {ferries[0].direction === "dzaoudzi-mamoudzou" ? "Mamoudzou" : "Dzaoudzi"} • Arrivée: {ferries[0].arrivalTime}
-            </ThemedText>
+              {/* Route Line */}
+              <View style={styles.routeLine}>
+                {/* Dashed Line Background */}
+                <View
+                  style={[
+                    styles.dashedLine,
+                    {
+                      borderTopColor: theme.primary,
+                      opacity: 0.3,
+                    },
+                  ]}
+                />
+
+                {/* Ferry Position Indicator */}
+                {ferryPosition !== null && (
+                  <View
+                    style={[
+                      styles.ferryOnRoute,
+                      {
+                        left: `${ferryPosition * 100}%`,
+                        backgroundColor: theme.warning,
+                      },
+                    ]}
+                  >
+                    <Feather name="navigation" size={12} color="#FFFFFF" />
+                  </View>
+                )}
+              </View>
+
+              {/* Mamoudzou Terminal */}
+              <View style={styles.terminalMarker}>
+                <View
+                  style={[styles.terminalDot, { backgroundColor: theme.primary }]}
+                >
+                  <Feather name="anchor" size={16} color="#FFFFFF" />
+                </View>
+              </View>
+            </View>
+
+            {/* Terminal Labels */}
+            <View style={styles.labelsContainer}>
+              <View style={styles.labelLeft}>
+                <ThemedText style={styles.terminalName}>
+                  {TERMINALS.DZAOUDZI.shortName}
+                </ThemedText>
+                <ThemedText
+                  style={[styles.terminalDetail, { color: theme.textSecondary }]}
+                >
+                  {TERMINALS.DZAOUDZI.name}
+                </ThemedText>
+              </View>
+
+              <View style={styles.labelRight}>
+                <ThemedText style={[styles.terminalName, { textAlign: "right" }]}>
+                  {TERMINALS.MAMOUDZOU.shortName}
+                </ThemedText>
+                <ThemedText
+                  style={[
+                    styles.terminalDetail,
+                    { color: theme.textSecondary, textAlign: "right" },
+                  ]}
+                >
+                  {TERMINALS.MAMOUDZOU.name}
+                </ThemedText>
+              </View>
+            </View>
+          </View>
+
+          {/* Ferry Status */}
+          {ferries.length > 0 ? (
+            <View style={[styles.ferryStatus, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name="info" size={18} color={theme.warning} style={styles.infoIcon} />
+              <View style={styles.ferryStatusText}>
+                <ThemedText style={styles.ferryStatusTitle}>
+                  Barge en route
+                </ThemedText>
+                <ThemedText style={[styles.ferryStatusDetail, { color: theme.textSecondary }]}>
+                  Destination: {ferries[0].direction === "dzaoudzi-mamoudzou" ? "Mamoudzou" : "Dzaoudzi"}
+                </ThemedText>
+                <ThemedText style={[styles.ferryStatusDetail, { color: theme.textSecondary }]}>
+                  Arrivée: {ferries[0].arrivalTime}
+                </ThemedText>
+              </View>
+            </View>
+          ) : (
+            <View style={[styles.ferryStatus, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name="check-circle" size={18} color={theme.primary} style={styles.infoIcon} />
+              <View style={styles.ferryStatusText}>
+                <ThemedText style={styles.ferryStatusTitle}>
+                  Aucune barge en route
+                </ThemedText>
+                <ThemedText style={[styles.ferryStatusDetail, { color: theme.textSecondary }]}>
+                  Consultez l'onglet Horaires pour les prochains départs
+                </ThemedText>
+              </View>
+            </View>
+          )}
+
+          {/* Crossing Info */}
+          <View style={[styles.crossingInfo, { backgroundColor: theme.backgroundSecondary }]}>
+            <View style={styles.crossingItem}>
+              <Feather name="clock" size={16} color={theme.primary} />
+              <View style={styles.crossingDetail}>
+                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
+                  Durée
+                </ThemedText>
+                <ThemedText style={styles.crossingValue}>15-20 min</ThemedText>
+              </View>
+            </View>
+
+            <View style={styles.crossingDivider} />
+
+            <View style={styles.crossingItem}>
+              <Feather name="users" size={16} color={theme.primary} />
+              <View style={styles.crossingDetail}>
+                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
+                  Piéton
+                </ThemedText>
+                <ThemedText style={styles.crossingValue}>Gratuit / 0,75€</ThemedText>
+              </View>
+            </View>
+
+            <View style={styles.crossingDivider} />
+
+            <View style={styles.crossingItem}>
+              <Feather name="truck" size={16} color={theme.primary} />
+              <View style={styles.crossingDetail}>
+                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
+                  Véhicule
+                </ThemedText>
+                <ThemedText style={styles.crossingValue}>15€</ThemedText>
+              </View>
+            </View>
           </View>
         </View>
-      )}
-
-      {/* Buy Button */}
-      <Pressable
-        style={[
-          styles.buyButton,
-          { backgroundColor: theme.primary, bottom: tabBarHeight + Spacing.xl },
-        ]}
-        onPress={() => navigation.navigate("TicketsTab")}
-      >
-        <Feather name="shopping-cart" size={20} color="#FFFFFF" />
-        <ThemedText style={styles.buyButtonText}>Acheter un billet</ThemedText>
-      </Pressable>
+      </ScreenScrollView>
 
       {currentAlert && (
-        <View style={[styles.alertContainer, { top: headerHeight + Spacing.lg }]}>
+        <View
+          style={[
+            styles.alertContainer,
+            {
+              top: headerHeight + Spacing.lg,
+            },
+          ]}
+        >
           <AlertBanner
             message={currentAlert.message}
             type={getAlertSeverityType(currentAlert.severity)}
           />
         </View>
       )}
+
+      <Pressable
+        style={[
+          styles.buyButton,
+          {
+            bottom: tabBarHeight + Spacing.xl,
+            backgroundColor: theme.primary,
+          },
+        ]}
+        onPress={() => navigation.navigate("TicketsTab")}
+      >
+        <Feather name="shopping-cart" size={20} color="#FFFFFF" />
+        <ThemedText style={styles.buyButtonText}>Acheter un billet</ThemedText>
+      </Pressable>
     </View>
   );
 }
-
-const lightMapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#616161" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9c9c9" }] },
-];
-
-const darkMapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#212121" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#757575" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#000000" }] },
-];
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
-    flex: 1,
+  mapCard: {
+    margin: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.lg,
   },
-  markerContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  mapTitle: {
+    marginBottom: Spacing.lg,
+  },
+  mapContainer: {
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.xl,
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+    height: 200,
+    justifyContent: "center",
+  },
+  routePath: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: Spacing.lg,
+  },
+  terminalMarker: {
+    alignItems: "center",
+  },
+  terminalDot: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  routeLine: {
+    flex: 1,
+    height: 4,
+    marginHorizontal: Spacing.md,
+    position: "relative",
+    justifyContent: "center",
+  },
+  dashedLine: {
+    flex: 1,
+    borderTopWidth: 2,
+    borderTopColor: "#000",
+    borderStyle: "dashed",
+  },
+  ferryOnRoute: {
+    position: "absolute",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    top: -14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 8,
   },
-  ferryMarker: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 10,
-  },
-  infoCard: {
-    position: "absolute",
-    bottom: 100,
-    left: Spacing.lg,
-    right: Spacing.lg,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.sm,
+  labelsContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    justifyContent: "space-between",
+    paddingHorizontal: Spacing.sm,
   },
-  infoTextContainer: {
+  labelLeft: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  labelRight: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
+  terminalName: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  terminalDetail: {
+    fontSize: 11,
+  },
+  ferryStatus: {
+    flexDirection: "row",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.xs,
+    marginBottom: Spacing.lg,
+    alignItems: "flex-start",
+    gap: Spacing.md,
+  },
+  infoIcon: {
+    marginTop: Spacing.xs,
+  },
+  ferryStatusText: {
     flex: 1,
   },
-  infoTitle: {
-    fontSize: 16,
+  ferryStatusTitle: {
+    fontSize: 14,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: Spacing.xs,
   },
-  infoDetail: {
+  ferryStatusDetail: {
     fontSize: 12,
+    marginBottom: Spacing.xs,
+  },
+  crossingInfo: {
+    borderRadius: BorderRadius.xs,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  crossingItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: Spacing.md,
+  },
+  crossingDetail: {
+    flex: 1,
+  },
+  crossingLabel: {
+    fontSize: 11,
+    marginBottom: Spacing.xs,
+  },
+  crossingValue: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  crossingDivider: {
+    height: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    marginVertical: Spacing.xs,
+  },
+  alertContainer: {
+    position: "absolute",
+    left: Spacing.lg,
+    right: Spacing.lg,
+    zIndex: 10,
   },
   buyButton: {
     position: "absolute",
     right: Spacing.lg,
+    zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
+    gap: Spacing.md,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.full,
@@ -228,12 +397,6 @@ const styles = StyleSheet.create({
   buyButtonText: {
     color: "#FFFFFF",
     fontWeight: "600",
-    marginLeft: Spacing.sm,
     fontSize: 14,
-  },
-  alertContainer: {
-    position: "absolute",
-    left: Spacing.lg,
-    right: Spacing.lg,
   },
 });
