@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { SearchBar } from "@/components/SearchBar";
 import { AlertBanner } from "@/components/AlertBanner";
 import { ThemedText } from "@/components/ThemedText";
@@ -15,6 +16,7 @@ import { ScreenScrollView } from "@/components/ScreenScrollView";
 export default function MapScreen() {
   const { theme } = useTheme();
   const { headerHeight, tabBarHeight } = useScreenInsets();
+  const navigation = useNavigation<any>();
   const [currentAlert, setCurrentAlert] = useState(getCurrentAlert());
   const [ferries, setFerries] = useState<FerryPosition[]>([]);
 
@@ -184,6 +186,20 @@ export default function MapScreen() {
       >
         <SearchBar placeholder="On va où ?" />
       </View>
+
+      <Pressable
+        style={[
+          styles.buyButton,
+          {
+            bottom: tabBarHeight + Spacing.xl + 70,
+            backgroundColor: theme.primary,
+          },
+        ]}
+        onPress={() => navigation.navigate("TicketPurchase")}
+      >
+        <Feather name="shopping-cart" size={20} color="#FFFFFF" />
+        <ThemedText style={styles.buyButtonText}>Acheter un billet</ThemedText>
+      </Pressable>
     </View>
   );
 }
@@ -306,5 +322,21 @@ const styles = StyleSheet.create({
     left: Spacing.lg,
     right: Spacing.lg,
     zIndex: 10,
+  },
+  buyButton: {
+    position: "absolute",
+    right: Spacing.lg,
+    zIndex: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+  },
+  buyButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });

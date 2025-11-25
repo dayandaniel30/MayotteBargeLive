@@ -1,16 +1,20 @@
 import React, { useState, useMemo } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ScheduleCard, ScheduleData } from "@/components/ScheduleCard";
 import { useTheme } from "@/hooks/useTheme";
+import { useScreenInsets } from "@/hooks/useScreenInsets";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { generateSchedules, getStandardScheduleInfo } from "@/utils/schedules";
 import { PRICING_INFO, getDurationText } from "@/utils/pricing";
 
 export default function SchedulesScreen() {
   const { theme } = useTheme();
+  const navigation = useNavigation<any>();
+  const { tabBarHeight } = useScreenInsets();
   const [filter, setFilter] = useState<"all" | "dzaoudzi" | "mamoudzou">("all");
   const [timeFilter, setTimeFilter] = useState<"all" | "morning" | "afternoon" | "evening">("all");
   
@@ -43,8 +47,9 @@ export default function SchedulesScreen() {
   };
 
   return (
-    <ScreenScrollView>
-      <View style={styles.filterSection}>
+    <View style={{ flex: 1 }}>
+      <ScreenScrollView>
+        <View style={styles.filterSection}>
         <ThemedText style={[styles.filterLabel, { color: theme.textSecondary }]}>
           Terminal de départ
         </ThemedText>
@@ -268,7 +273,22 @@ export default function SchedulesScreen() {
           </ThemedText>
         </View>
       </View>
-    </ScreenScrollView>
+      </ScreenScrollView>
+
+      <Pressable
+        style={[
+          styles.buyButton,
+          {
+            backgroundColor: theme.primary,
+            bottom: tabBarHeight + Spacing.lg,
+          },
+        ]}
+        onPress={() => navigation.navigate("TicketPurchase")}
+      >
+        <Feather name="shopping-cart" size={20} color="#FFFFFF" />
+        <ThemedText style={styles.buyButtonText}>Acheter un billet</ThemedText>
+      </Pressable>
+    </View>
   );
 }
 
@@ -329,5 +349,21 @@ const styles = StyleSheet.create({
   pricingNote: {
     fontSize: 12,
     marginTop: Spacing.xs,
+  },
+  buyButton: {
+    position: "absolute",
+    right: Spacing.lg,
+    zIndex: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+  },
+  buyButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 14,
   },
 });
