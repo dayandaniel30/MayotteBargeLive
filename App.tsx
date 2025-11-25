@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import AuthScreen from "@/screens/AuthScreen";
 import CheckoutScreen from "@/screens/CheckoutScreen";
+import SplashScreen from "@/screens/SplashScreen";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getAuthUser, login, signup, logout, User } from "@/utils/auth";
 
@@ -18,6 +19,7 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     const restoreAuth = async () => {
@@ -33,6 +35,10 @@ export default function App() {
 
     restoreAuth();
   }, []);
+
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+  };
 
   const handleLogin = async (
     email: string,
@@ -56,6 +62,19 @@ export default function App() {
     await logout();
     setUser(null);
   };
+
+  if (showSplash) {
+    return (
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={styles.root}>
+            <SplashScreen onFinish={handleSplashFinish} />
+            <StatusBar style="auto" />
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    );
+  }
 
   return (
     <ErrorBoundary>
