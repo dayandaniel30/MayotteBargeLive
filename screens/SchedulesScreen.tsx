@@ -46,16 +46,6 @@ export default function SchedulesScreen() {
     console.log("Schedule pressed:", schedule);
   };
 
-  const handleBuyTicket = (schedule: ScheduleData) => {
-    // Get price based on direction (0 for free, 0.75 for paid)
-    const price = schedule.from === "Dzaoudzi" ? 0 : 0.75;
-    navigation.navigate("TicketPurchase", { 
-      ticketType: "pedestrian",
-      price,
-      schedule
-    });
-  };
-
   return (
     <View style={{ flex: 1 }}>
       <ScreenScrollView>
@@ -213,7 +203,6 @@ export default function SchedulesScreen() {
             key={`${schedule.departureTime}-${index}`}
             schedule={schedule}
             onPress={() => handleSchedulePress(schedule)}
-            onBuyTicket={() => handleBuyTicket(schedule)}
           />
         ))}
       </View>

@@ -25,24 +25,18 @@ export interface ScheduleData {
 interface ScheduleCardProps {
   schedule: ScheduleData;
   onPress?: () => void;
-  onBuyTicket?: () => void;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function ScheduleCard({ schedule, onPress, onBuyTicket }: ScheduleCardProps) {
+export function ScheduleCard({ schedule, onPress }: ScheduleCardProps) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
-  const buyButtonScale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
-  }));
-
-  const buyButtonAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buyButtonScale.value }],
   }));
 
   const handlePressIn = () => {
@@ -53,14 +47,6 @@ export function ScheduleCard({ schedule, onPress, onBuyTicket }: ScheduleCardPro
   const handlePressOut = () => {
     scale.value = withSpring(1);
     opacity.value = withSpring(1);
-  };
-
-  const handleBuyButtonPressIn = () => {
-    buyButtonScale.value = withSpring(0.95);
-  };
-
-  const handleBuyButtonPressOut = () => {
-    buyButtonScale.value = withSpring(1);
   };
 
   const getStatusColor = () => {
@@ -124,24 +110,8 @@ export function ScheduleCard({ schedule, onPress, onBuyTicket }: ScheduleCardPro
           </View>
         </View>
 
-        <View style={styles.centerContent}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
-            <ThemedText style={styles.statusText}>{getStatusText()}</ThemedText>
-          </View>
-          
-          {onBuyTicket && (
-            <Animated.View style={buyButtonAnimatedStyle}>
-              <Pressable
-                style={[styles.buyButton, { backgroundColor: theme.primary }]}
-                onPress={onBuyTicket}
-                onPressIn={handleBuyButtonPressIn}
-                onPressOut={handleBuyButtonPressOut}
-              >
-                <Feather name="shopping-cart" size={14} color="#FFFFFF" />
-                <ThemedText style={styles.buyButtonText}>Acheter</ThemedText>
-              </Pressable>
-            </Animated.View>
-          )}
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
+          <ThemedText style={styles.statusText}>{getStatusText()}</ThemedText>
         </View>
       </View>
     </AnimatedPressable>
@@ -181,11 +151,6 @@ const styles = StyleSheet.create({
   timeContainer: {
     flex: 1,
   },
-  centerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.md,
-  },
   time: {
     ...Typography.h3,
     marginBottom: Spacing.xs,
@@ -207,23 +172,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.xs,
-    minWidth: 80,
   },
   statusText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  buyButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.full,
-  },
-  buyButtonText: {
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "600",
