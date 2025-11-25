@@ -1,14 +1,18 @@
 import React from "react";
 import { View, StyleSheet, Pressable, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  runOnJS,
 } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
+import { MainTabParamList } from "@/navigation/MainTabNavigator";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -19,6 +23,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function SearchBar({ placeholder = "On va où ?", onPress }: SearchBarProps) {
   const { isDark } = useTheme();
+  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -33,9 +38,21 @@ export function SearchBar({ placeholder = "On va où ?", onPress }: SearchBarPro
     scale.value = withSpring(1);
   };
 
+  const navigateToSchedules = () => {
+    navigation.navigate("SchedulesTab");
+  };
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      navigateToSchedules();
+    }
+  };
+
   return (
     <AnimatedPressable
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[styles.container, animatedStyle]}

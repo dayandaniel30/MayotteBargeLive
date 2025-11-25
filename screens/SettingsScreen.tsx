@@ -128,6 +128,35 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
+        <ThemedText style={styles.sectionTitle}>Tarifs & Informations</ThemedText>
+        
+        <View style={[styles.settingItem, { backgroundColor: theme.card, flexDirection: "column", alignItems: "flex-start" }]}>
+          <View style={[styles.settingLeft, { marginBottom: Spacing.md }]}>
+            <Feather name="dollar-sign" size={20} color={theme.primary} style={styles.settingIcon} />
+            <ThemedText style={styles.settingTitle}>Tarification</ThemedText>
+          </View>
+          
+          <View style={styles.tarifDetails}>
+            <ThemedText style={[styles.tarifLine, { color: theme.text }]}>
+              Piéton (Petite → Grande-Terre) : Gratuit
+            </ThemedText>
+            <ThemedText style={[styles.tarifLine, { color: theme.text }]}>
+              Piéton (Grande → Petite-Terre) : 0,75€
+            </ThemedText>
+            <ThemedText style={[styles.tarifLine, { color: theme.text }]}>
+              Véhicule : 15€
+            </ThemedText>
+            <ThemedText style={[styles.tarifLine, { color: theme.text }]}>
+              Moto : 5€
+            </ThemedText>
+            <ThemedText style={[styles.tarifLine, { color: theme.text, marginTop: Spacing.sm }]}>
+              Durée du trajet : 15-20 minutes
+            </ThemedText>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.section}>
         <ThemedText style={styles.sectionTitle}>À propos</ThemedText>
         
         <SettingItem
@@ -216,5 +245,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     lineHeight: 20,
+  },
+  tarifDetails: {
+    width: "100%",
+  },
+  tarifLine: {
+    fontSize: 14,
+    marginBottom: Spacing.xs,
   },
 });

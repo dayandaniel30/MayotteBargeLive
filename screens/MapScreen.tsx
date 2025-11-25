@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { View, StyleSheet, Platform } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Feather } from "@expo/vector-icons";
@@ -8,6 +8,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
 import { Colors, Spacing } from "@/constants/theme";
 import { TERMINALS } from "@/utils/schedules";
+import { getCurrentAlert, getAlertSeverityType } from "@/utils/alerts";
+import { getSimulatedFerries, FerryPosition } from "@/utils/ferrySimulation";
 
 const MAYOTTE_REGION = {
   latitude: -12.7847,
@@ -38,11 +40,23 @@ export default function MapScreen() {
   const { theme } = useTheme();
   const { headerHeight, tabBarHeight } = useScreenInsets();
   const mapRef = useRef<MapView>(null);
-  const [showAlert, setShowAlert] = useState(true);
+  const [currentAlert, setCurrentAlert] = useState(getCurrentAlert());
+  const [ferries, setFerries] = useState<FerryPosition[]>([]);
 
-  const handleSearchPress = () => {
-    console.log("Search pressed");
-  };
+  useEffect(() => {
+    const alert = getCurrentAlert();
+    setCurrentAlert(alert);
+
+    const updateFerries = () => {
+      const activeFerries = getSimulatedFerries();
+      setFerries(activeFerries);
+    };
+
+    updateFerries();
+    const interval = setInterval(updateFerries, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const polylineCoordinates = [
     TERMINALS.DZAOUDZI.coordinates,
@@ -91,9 +105,24 @@ export default function MapScreen() {
           strokeWidth={3}
           lineDashPattern={[10, 5]}
         />
+
+        {ferries.map((ferry) => (
+          <Marker
+            key={ferry.id}
+            coordinate={ferry.coordinates}
+            title={ferry.name}
+            description={`En route vers ${ferry.direction === "dzaoudzi-mamoudzou" ? "Mamoudzou" : "Dzaoudzi"} - Arrivée: ${ferry.arrivalTime}`}
+          >
+            <View style={styles.ferryMarkerContainer}>
+              <View style={[styles.ferryMarker, { backgroundColor: theme.warning }]}>
+                <Feather name="navigation" size={16} color="#FFFFFF" />
+              </View>
+            </View>
+          </Marker>
+        ))}
       </MapView>
 
-      {showAlert ? (
+      {currentAlert ? (
         <View
           style={[
             styles.alertContainer,
@@ -102,7 +131,10 @@ export default function MapScreen() {
             },
           ]}
         >
-          <AlertBanner message="Service normal - Horaires respectés" type="info" />
+          <AlertBanner
+            message={currentAlert.message}
+            type={getAlertSeverityType(currentAlert.severity)}
+          />
         </View>
       ) : null}
 
@@ -114,7 +146,7 @@ export default function MapScreen() {
           },
         ]}
       >
-        <SearchBar placeholder="On va où ?" onPress={handleSearchPress} />
+        <SearchBar placeholder="On va où ?" />
       </View>
     </View>
   );
@@ -137,6 +169,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
+    borderColor: "#FFFFFF",
+  },
+  ferryMarkerContainer: {
+    alignItems: "center",
+  },
+  ferryMarker: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
     borderColor: "#FFFFFF",
   },
   alertContainer: {

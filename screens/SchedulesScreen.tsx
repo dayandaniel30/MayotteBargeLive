@@ -7,19 +7,36 @@ import { ScheduleCard, ScheduleData } from "@/components/ScheduleCard";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { generateSchedules, getStandardScheduleInfo } from "@/utils/schedules";
+import { PRICING_INFO, getDurationText } from "@/utils/pricing";
 
 export default function SchedulesScreen() {
   const { theme } = useTheme();
   const [filter, setFilter] = useState<"all" | "dzaoudzi" | "mamoudzou">("all");
+  const [timeFilter, setTimeFilter] = useState<"all" | "morning" | "afternoon" | "evening">("all");
   
   const schedules = useMemo(() => generateSchedules(), []);
   const scheduleInfo = getStandardScheduleInfo();
 
   const filteredSchedules = useMemo(() => {
-    if (filter === "all") return schedules;
-    const fromFilter = filter === "dzaoudzi" ? "Dzaoudzi" : "Mamoudzou";
-    return schedules.filter(s => s.from === fromFilter);
-  }, [schedules, filter]);
+    let filtered = schedules;
+
+    if (filter !== "all") {
+      const fromFilter = filter === "dzaoudzi" ? "Dzaoudzi" : "Mamoudzou";
+      filtered = filtered.filter(s => s.from === fromFilter);
+    }
+
+    if (timeFilter !== "all") {
+      filtered = filtered.filter(s => {
+        const hour = parseInt(s.departureTime.split(":")[0]);
+        if (timeFilter === "morning") return hour >= 5 && hour < 12;
+        if (timeFilter === "afternoon") return hour >= 12 && hour < 18;
+        if (timeFilter === "evening") return hour >= 18 || hour < 5;
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [schedules, filter, timeFilter]);
 
   const handleSchedulePress = (schedule: ScheduleData) => {
     console.log("Schedule pressed:", schedule);
@@ -27,7 +44,11 @@ export default function SchedulesScreen() {
 
   return (
     <ScreenScrollView>
-      <View style={styles.filterContainer}>
+      <View style={styles.filterSection}>
+        <ThemedText style={[styles.filterLabel, { color: theme.textSecondary }]}>
+          Terminal de départ
+        </ThemedText>
+        <View style={styles.filterContainer}>
         <Pressable
           style={[
             styles.filterButton,
@@ -85,6 +106,90 @@ export default function SchedulesScreen() {
           </ThemedText>
         </Pressable>
       </View>
+      </View>
+
+      <View style={styles.filterSection}>
+        <ThemedText style={[styles.filterLabel, { color: theme.textSecondary }]}>
+          Heure de départ
+        </ThemedText>
+        <View style={styles.filterContainer}>
+          <Pressable
+            style={[
+              styles.filterButton,
+              {
+                backgroundColor: timeFilter === "all" ? theme.primary : theme.backgroundSecondary,
+              },
+            ]}
+            onPress={() => setTimeFilter("all")}
+          >
+            <ThemedText
+              style={[
+                styles.filterText,
+                { color: timeFilter === "all" ? "#FFFFFF" : theme.text },
+              ]}
+            >
+              Tous
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.filterButton,
+              {
+                backgroundColor: timeFilter === "morning" ? theme.primary : theme.backgroundSecondary,
+              },
+            ]}
+            onPress={() => setTimeFilter("morning")}
+          >
+            <ThemedText
+              style={[
+                styles.filterText,
+                { color: timeFilter === "morning" ? "#FFFFFF" : theme.text },
+              ]}
+            >
+              Matin
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.filterButton,
+              {
+                backgroundColor: timeFilter === "afternoon" ? theme.primary : theme.backgroundSecondary,
+              },
+            ]}
+            onPress={() => setTimeFilter("afternoon")}
+          >
+            <ThemedText
+              style={[
+                styles.filterText,
+                { color: timeFilter === "afternoon" ? "#FFFFFF" : theme.text },
+              ]}
+            >
+              Après-midi
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.filterButton,
+              {
+                backgroundColor: timeFilter === "evening" ? theme.primary : theme.backgroundSecondary,
+              },
+            ]}
+            onPress={() => setTimeFilter("evening")}
+          >
+            <ThemedText
+              style={[
+                styles.filterText,
+                { color: timeFilter === "evening" ? "#FFFFFF" : theme.text },
+              ]}
+            >
+              Soir
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
 
       <View style={styles.section}>
         <ThemedText style={styles.sectionTitle}>Prochains départs</ThemedText>
@@ -135,15 +240,51 @@ export default function SchedulesScreen() {
           </ThemedText>
         </View>
       </View>
+
+      <View style={[styles.infoCard, { backgroundColor: theme.card }]}>
+        <ThemedText style={styles.infoTitle}>Tarifs</ThemedText>
+        
+        <View style={styles.infoRow}>
+          <Feather name="user" size={18} color={theme.primary} />
+          <View style={styles.pricingTextContainer}>
+            <ThemedText style={styles.infoText}>Piéton</ThemedText>
+            <ThemedText style={[styles.pricingNote, { color: theme.textSecondary }]}>
+              {PRICING_INFO.pedestrian.note}
+            </ThemedText>
+          </View>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Feather name="truck" size={18} color={theme.primary} />
+          <ThemedText style={styles.infoText}>
+            Véhicule : {PRICING_INFO.vehicle.price}
+          </ThemedText>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Feather name="zap" size={18} color={theme.primary} />
+          <ThemedText style={styles.infoText}>
+            Moto : {PRICING_INFO.motorcycle.price}
+          </ThemedText>
+        </View>
+      </View>
     </ScreenScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  filterSection: {
+    marginBottom: Spacing.md,
+  },
+  filterLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: Spacing.sm,
+    textTransform: "uppercase",
+  },
   filterContainer: {
     flexDirection: "row",
     gap: Spacing.sm,
-    paddingVertical: Spacing.md,
   },
   filterButton: {
     flex: 1,
@@ -181,5 +322,12 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 16,
     flex: 1,
+  },
+  pricingTextContainer: {
+    flex: 1,
+  },
+  pricingNote: {
+    fontSize: 12,
+    marginTop: Spacing.xs,
   },
 });
