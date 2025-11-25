@@ -162,42 +162,6 @@ export default function MapScreen() {
             </View>
           )}
 
-          {/* Crossing Info */}
-          <View style={[styles.crossingInfo, { backgroundColor: theme.backgroundSecondary }]}>
-            <View style={styles.crossingItem}>
-              <Feather name="clock" size={16} color={theme.primary} />
-              <View style={styles.crossingDetail}>
-                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
-                  Durée
-                </ThemedText>
-                <ThemedText style={styles.crossingValue}>15-20 min</ThemedText>
-              </View>
-            </View>
-
-            <View style={styles.crossingDivider} />
-
-            <View style={styles.crossingItem}>
-              <Feather name="users" size={16} color={theme.primary} />
-              <View style={styles.crossingDetail}>
-                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
-                  Piéton
-                </ThemedText>
-                <ThemedText style={styles.crossingValue}>Gratuit / 0,75€</ThemedText>
-              </View>
-            </View>
-
-            <View style={styles.crossingDivider} />
-
-            <View style={styles.crossingItem}>
-              <Feather name="truck" size={16} color={theme.primary} />
-              <View style={styles.crossingDetail}>
-                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
-                  Véhicule
-                </ThemedText>
-                <ThemedText style={styles.crossingValue}>15€</ThemedText>
-              </View>
-            </View>
-          </View>
         </View>
       </ScreenScrollView>
 
