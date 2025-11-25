@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import AuthScreen from "@/screens/AuthScreen";
 import CheckoutScreen from "@/screens/CheckoutScreen";
+import TicketPurchaseScreen from "@/screens/TicketPurchaseScreen";
 import SplashScreen from "@/screens/SplashScreen";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getAuthUser, login, signup, logout, User } from "@/utils/auth";
@@ -20,6 +21,10 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
+  const [selectedTicket, setSelectedTicket] = useState<{
+    id: string;
+    price: number;
+  } | null>(null);
 
   useEffect(() => {
     const restoreAuth = async () => {
@@ -105,6 +110,25 @@ export default function App() {
                         <MainTabNavigator
                           user={user}
                           onLogout={handleLogout}
+                        />
+                      )}
+                    </Stack.Screen>
+                    <Stack.Screen
+                      name="TicketPurchase"
+                      options={{
+                        animationEnabled: true,
+                        cardStyle: { backgroundColor: "transparent" },
+                      }}
+                    >
+                      {() => (
+                        <TicketPurchaseScreen
+                          onSelectTicket={(ticketId, price) => {
+                            setSelectedTicket({ id: ticketId, price });
+                          }}
+                          onClose={() => {
+                            // Will navigate to checkout
+                            setSelectedTicket(null);
+                          }}
                         />
                       )}
                     </Stack.Screen>

@@ -20,6 +20,7 @@ export type MainTabParamList = {
 interface MainTabNavigatorProps {
   user?: any;
   onLogout?: () => void;
+  onNavigateToTickets?: () => void;
 }
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
