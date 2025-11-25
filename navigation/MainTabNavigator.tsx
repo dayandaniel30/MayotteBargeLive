@@ -6,6 +6,7 @@ import { Platform, StyleSheet, Pressable } from "react-native";
 import MapScreen from "@/screens/MapScreen";
 import SchedulesScreen from "@/screens/SchedulesScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
+import TicketPurchaseScreen from "@/screens/TicketPurchaseScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { HeaderTitle } from "@/components/HeaderTitle";
 import { getCommonScreenOptions } from "./screenOptions";
@@ -14,6 +15,7 @@ import { Spacing } from "@/constants/theme";
 export type MainTabParamList = {
   MapTab: undefined;
   SchedulesTab: undefined;
+  TicketsTab: undefined;
   SettingsTab: undefined;
 };
 
@@ -89,6 +91,17 @@ export default function MainTabNavigator({
           headerTransparent: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="clock" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="TicketsTab"
+        component={TicketPurchaseScreen}
+        options={{
+          title: "Billets",
+          headerTransparent: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="shopping-cart" size={size} color={color} />
           ),
         }}
       />
