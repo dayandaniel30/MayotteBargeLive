@@ -3,13 +3,17 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Platform, StyleSheet } from "react-native";
-import HomeStackNavigator from "@/navigation/HomeStackNavigator";
-import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
+import MapScreen from "@/screens/MapScreen";
+import SchedulesScreen from "@/screens/SchedulesScreen";
+import SettingsScreen from "@/screens/SettingsScreen";
 import { useTheme } from "@/hooks/useTheme";
+import { HeaderTitle } from "@/components/HeaderTitle";
+import { getCommonScreenOptions } from "./screenOptions";
 
 export type MainTabParamList = {
-  HomeTab: undefined;
-  ProfileTab: undefined;
+  MapTab: undefined;
+  SchedulesTab: undefined;
+  SettingsTab: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -19,7 +23,7 @@ export default function MainTabNavigator() {
 
   return (
     <Tab.Navigator
-      initialRouteName="HomeTab"
+      initialRouteName="MapTab"
       screenOptions={{
         tabBarActiveTintColor: theme.tabIconSelected,
         tabBarInactiveTintColor: theme.tabIconDefault,
@@ -40,26 +44,52 @@ export default function MainTabNavigator() {
               style={StyleSheet.absoluteFill}
             />
           ) : null,
-        headerShown: false,
+        headerTitleAlign: "center",
+        headerTransparent: false,
+        headerTintColor: theme.text,
+        headerStyle: {
+          backgroundColor: theme.backgroundRoot,
+        },
       }}
     >
       <Tab.Screen
-        name="HomeTab"
-        component={HomeStackNavigator}
+        name="MapTab"
+        component={MapScreen}
         options={{
-          title: "Home",
+          title: "Carte",
+          headerTitle: () => <HeaderTitle title="Barge de Mayotte" />,
+          headerRight: () => null,
+          headerTransparent: true,
+          headerStyle: {
+            backgroundColor: Platform.select({
+              ios: "transparent",
+              android: theme.backgroundRoot,
+            }),
+          },
           tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size} color={color} />
+            <Feather name="map" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="ProfileTab"
-        component={ProfileStackNavigator}
+        name="SchedulesTab"
+        component={SchedulesScreen}
         options={{
-          title: "Profile",
+          title: "Horaires",
+          headerTransparent: false,
           tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={size} color={color} />
+            <Feather name="clock" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="SettingsTab"
+        component={SettingsScreen}
+        options={{
+          title: "Paramètres",
+          headerTransparent: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="settings" size={size} color={color} />
           ),
         }}
       />

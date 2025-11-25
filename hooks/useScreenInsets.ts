@@ -13,5 +13,7 @@ export function useScreenInsets() {
     paddingTop: headerHeight + Spacing.xl,
     paddingBottom: tabBarHeight + Spacing.xl,
     scrollInsetBottom: insets.bottom + 16,
+    headerHeight,
+    tabBarHeight,
   };
 }
