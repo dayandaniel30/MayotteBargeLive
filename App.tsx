@@ -14,6 +14,7 @@ import TicketPurchaseScreen from "@/screens/TicketPurchaseScreen";
 import SplashScreen from "@/screens/SplashScreen";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getAuthUser, login, signup, logout, User } from "@/utils/auth";
+import { ThemeProvider } from "@/hooks/ThemeContext";
 
 const Stack = createNativeStackNavigator();
 
@@ -71,22 +72,25 @@ export default function App() {
   if (showSplash) {
     return (
       <ErrorBoundary>
-        <SafeAreaProvider>
-          <GestureHandlerRootView style={styles.root}>
-            <SplashScreen onFinish={handleSplashFinish} />
-            <StatusBar style="auto" />
-          </GestureHandlerRootView>
-        </SafeAreaProvider>
+        <ThemeProvider>
+          <SafeAreaProvider>
+            <GestureHandlerRootView style={styles.root}>
+              <SplashScreen onFinish={handleSplashFinish} />
+              <StatusBar style="auto" />
+            </GestureHandlerRootView>
+          </SafeAreaProvider>
+        </ThemeProvider>
       </ErrorBoundary>
     );
   }
 
   return (
     <ErrorBoundary>
-      <SafeAreaProvider>
-        <GestureHandlerRootView style={styles.root}>
-          <KeyboardProvider>
-            <NavigationContainer>
+      <ThemeProvider>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={styles.root}>
+            <KeyboardProvider>
+              <NavigationContainer>
               <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {!user ? (
                   <Stack.Screen
@@ -154,11 +158,12 @@ export default function App() {
                   </>
                 )}
               </Stack.Navigator>
-            </NavigationContainer>
-            <StatusBar style="auto" />
-          </KeyboardProvider>
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
+              </NavigationContainer>
+              <StatusBar style="auto" />
+            </KeyboardProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

@@ -5,6 +5,7 @@ import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { useSettings } from "@/hooks/useSettings";
+import { useThemeContext } from "@/hooks/ThemeContext";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 
 interface SettingItemProps {
@@ -52,6 +53,7 @@ function SettingItem({ icon, title, value, type = "text", toggleValue, onToggle,
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const { settings, saveSettings, isLoading } = useSettings();
+  const { isDark } = useThemeContext();
 
   const handleContactSTM = () => {
     Linking.openURL("tel:0269643970");
@@ -99,10 +101,10 @@ export default function SettingsScreen() {
         />
         
         <SettingItem
-          icon="moon"
-          title="Thème sombre"
+          icon={isDark ? "moon" : "sun"}
+          title={isDark ? "Mode clair" : "Thème sombre"}
           type="toggle"
-          toggleValue={settings.darkModeEnabled}
+          toggleValue={isDark}
           onToggle={(value) => saveSettings({ darkModeEnabled: value })}
         />
       </View>
