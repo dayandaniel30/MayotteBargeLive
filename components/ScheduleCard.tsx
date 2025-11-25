@@ -9,6 +9,7 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { Colors, Spacing, BorderRadius, Shadows, Typography } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
+import { getPedestrianPrice } from "@/utils/pricing";
 
 export type ScheduleStatus = "on-time" | "delayed" | "cancelled";
 
@@ -101,6 +102,12 @@ export function ScheduleCard({ schedule, onPress }: ScheduleCardProps) {
           <ThemedText style={[styles.duration, { color: theme.textSecondary }]}>
             {schedule.duration}
           </ThemedText>
+          <View style={styles.priceRow}>
+            <Feather name="dollar-sign" size={12} color={theme.primary} />
+            <ThemedText style={[styles.price, { color: theme.primary }]}>
+              {getPedestrianPrice(schedule.from === "Dzaoudzi" ? "dzaoudzi" : "mamoudzou")}
+            </ThemedText>
+          </View>
         </View>
 
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
@@ -150,6 +157,16 @@ const styles = StyleSheet.create({
   },
   duration: {
     ...Typography.caption,
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: Spacing.xs,
+    gap: Spacing.xs,
+  },
+  price: {
+    fontSize: 12,
+    fontWeight: "600",
   },
   statusBadge: {
     paddingHorizontal: Spacing.md,

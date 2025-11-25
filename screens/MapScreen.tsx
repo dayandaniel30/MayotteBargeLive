@@ -119,12 +119,41 @@ export default function MapScreen() {
             </View>
           )}
 
-          {/* Info Box */}
-          <View style={[styles.infoBox, { backgroundColor: theme.backgroundSecondary }]}>
-            <Feather name="map-pin" size={18} color={theme.primary} />
-            <ThemedText style={[styles.infoBoxText, { color: theme.textSecondary }]}>
-              Trajet: Petite-Terre ↔ Grande-Terre (15-20 min)
-            </ThemedText>
+          {/* Crossing Info */}
+          <View style={[styles.crossingInfo, { backgroundColor: theme.backgroundSecondary }]}>
+            <View style={styles.crossingItem}>
+              <Feather name="clock" size={16} color={theme.primary} />
+              <View style={styles.crossingDetail}>
+                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
+                  Durée
+                </ThemedText>
+                <ThemedText style={styles.crossingValue}>15-20 min</ThemedText>
+              </View>
+            </View>
+            
+            <View style={styles.crossingDivider} />
+            
+            <View style={styles.crossingItem}>
+              <Feather name="users" size={16} color={theme.primary} />
+              <View style={styles.crossingDetail}>
+                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
+                  Piéton
+                </ThemedText>
+                <ThemedText style={styles.crossingValue}>Gratuit / 0,75€</ThemedText>
+              </View>
+            </View>
+
+            <View style={styles.crossingDivider} />
+            
+            <View style={styles.crossingItem}>
+              <Feather name="truck" size={16} color={theme.primary} />
+              <View style={styles.crossingDetail}>
+                <ThemedText style={[styles.crossingLabel, { color: theme.textSecondary }]}>
+                  Véhicule
+                </ThemedText>
+                <ThemedText style={styles.crossingValue}>15€</ThemedText>
+              </View>
+            </View>
           </View>
         </View>
       </ScreenScrollView>
@@ -240,16 +269,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: Spacing.xs,
   },
-  infoBox: {
-    flexDirection: "row",
-    padding: Spacing.md,
+  crossingInfo: {
     borderRadius: BorderRadius.xs,
-    alignItems: "center",
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  crossingItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: Spacing.md,
   },
-  infoBoxText: {
-    fontSize: 13,
+  crossingDetail: {
     flex: 1,
+  },
+  crossingLabel: {
+    fontSize: 11,
+    marginBottom: Spacing.xs,
+  },
+  crossingValue: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  crossingDivider: {
+    height: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    marginVertical: Spacing.xs,
   },
   alertContainer: {
     position: "absolute",
