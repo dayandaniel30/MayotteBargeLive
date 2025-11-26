@@ -7,6 +7,7 @@ import MapScreen from "@/screens/MapScreen";
 import SchedulesScreen from "@/screens/SchedulesScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import TicketPurchaseScreen from "@/screens/TicketPurchaseScreen";
+import CartScreen from "@/screens/CartScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { HeaderTitle } from "@/components/HeaderTitle";
 import { getCommonScreenOptions } from "./screenOptions";
@@ -16,6 +17,7 @@ export type MainTabParamList = {
   MapTab: undefined;
   SchedulesTab: undefined;
   TicketsTab: undefined;
+  CartTab: undefined;
   SettingsTab: undefined;
 };
 
@@ -91,6 +93,17 @@ export default function MainTabNavigator({
         component={TicketPurchaseScreen}
         options={{
           title: "Billets",
+          headerTransparent: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="ticket" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CartTab"
+        component={CartScreen}
+        options={{
+          title: "Panier",
           headerTransparent: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="shopping-cart" size={size} color={color} />
