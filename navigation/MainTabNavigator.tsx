@@ -69,15 +69,7 @@ export default function MainTabNavigator({
         component={MapScreen}
         options={{
           title: "Carte",
-          headerTitle: () => <HeaderTitle title="Barge de Mayotte" />,
-          headerRight: () => null,
-          headerTransparent: true,
-          headerStyle: {
-            backgroundColor: Platform.select({
-              ios: "transparent",
-              android: theme.backgroundRoot,
-            }),
-          },
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="map" size={size} color={color} />
           ),
