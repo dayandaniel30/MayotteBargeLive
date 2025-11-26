@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, StyleSheet, Pressable, Dimensions } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
@@ -20,6 +20,7 @@ export default function MapScreen() {
   const navigation = useNavigation<any>();
   const [currentAlert, setCurrentAlert] = useState(getCurrentAlert());
   const [ferries, setFerries] = useState<FerryPosition[]>([]);
+  const webViewRef = useRef<WebView>(null);
 
   useEffect(() => {
     const alert = getCurrentAlert();
@@ -28,19 +29,23 @@ export default function MapScreen() {
     const updateFerries = () => {
       const activeFerries = getSimulatedFerries();
       setFerries(activeFerries);
+
+      // Send ferry position to WebView
+      if (activeFerries.length > 0 && webViewRef.current) {
+        const ferryLat = DZAOUDZI_COORDS.lat + (MAMOUDZOU_COORDS.lat - DZAOUDZI_COORDS.lat) * activeFerries[0].progress;
+        const ferryLng = DZAOUDZI_COORDS.lng + (MAMOUDZOU_COORDS.lng - DZAOUDZI_COORDS.lng) * activeFerries[0].progress;
+        webViewRef.current.injectJavaScript(`
+          if (window.updateFerryPosition) {
+            window.updateFerryPosition(${ferryLat}, ${ferryLng}, '${activeFerries[0].direction === "dzaoudzi-mamoudzou" ? "Mamoudzou" : "Dzaoudzi"}');
+          }
+        `);
+      }
     };
 
     updateFerries();
-    const interval = setInterval(updateFerries, 5000);
+    const interval = setInterval(updateFerries, 2000);
     return () => clearInterval(interval);
   }, []);
-
-  const ferryLat = ferries.length > 0 
-    ? DZAOUDZI_COORDS.lat + (MAMOUDZOU_COORDS.lat - DZAOUDZI_COORDS.lat) * ferries[0].progress
-    : null;
-  const ferryLng = ferries.length > 0
-    ? DZAOUDZI_COORDS.lng + (MAMOUDZOU_COORDS.lng - DZAOUDZI_COORDS.lng) * ferries[0].progress
-    : null;
 
   const mapHtml = `
     <!DOCTYPE html>
@@ -77,11 +82,13 @@ export default function MapScreen() {
           inertiaMaxSpeed: 1500,
         }).setView([12.78, 45.26], 12);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap',
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/positron/{z}/{x}/{y}{r}.png', {
+          attribution: '© CartoDB, © OpenStreetMap',
           maxZoom: 18,
           minZoom: 10,
         }).addTo(map);
+
+        let ferryMarker = null;
 
         // Dzaoudzi Marker
         const dzMarker = L.circleMarker([${DZAOUDZI_COORDS.lat}, ${DZAOUDZI_COORDS.lng}], {
@@ -115,17 +122,22 @@ export default function MapScreen() {
           interactive: false
         }).addTo(map);
 
-        ${ferryLat !== null && ferryLng !== null ? `
-        // Ferry Position
-        L.circleMarker([${ferryLat}, ${ferryLng}], {
-          radius: 10,
-          fillColor: '#F39C12',
-          color: '#fff',
-          weight: 2,
-          opacity: 1,
-          fillOpacity: 1
-        }).bindPopup('<b>Barge en route</b>', { closeButton: false }).addTo(map);
-        ` : ''}
+        // Update ferry position in real-time
+        window.updateFerryPosition = function(lat, lng, destination) {
+          if (ferryMarker) {
+            ferryMarker.setLatLng([lat, lng]);
+          } else {
+            ferryMarker = L.circleMarker([lat, lng], {
+              radius: 10,
+              fillColor: '#F39C12',
+              color: '#fff',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 1,
+              pane: 'markerPane'
+            }).bindPopup('<b>Barge en route</b><br/>Destination: ' + destination, { closeButton: false }).addTo(map);
+          }
+        };
 
         // Fit bounds to show both terminals
         const group = new L.featureGroup([dzMarker, mmMarker]);
@@ -138,6 +150,7 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <WebView
+        ref={webViewRef}
         source={{ html: mapHtml }}
         style={styles.webView}
         scrollEnabled={true}
