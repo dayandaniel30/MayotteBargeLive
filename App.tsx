@@ -15,7 +15,7 @@ import SplashScreen from "@/screens/SplashScreen";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getAuthUser, login, signup, logout, User } from "@/utils/auth";
 import { ThemeProvider } from "@/hooks/ThemeContext";
-import { CartProvider } from "@/hooks/useCart";
+import { CartProvider } from "@/hooks/useCart.tsx";
 
 const Stack = createNativeStackNavigator();
 
@@ -162,12 +162,13 @@ export default function App() {
                   </>
                 )}
               </Stack.Navigator>
-              </NavigationContainer>
+                </NavigationContainer>
+              </KeyboardProvider>
               <StatusBar style="auto" />
-            </KeyboardProvider>
-          </GestureHandlerRootView>
-        </SafeAreaProvider>
-      </ThemeProvider>
+            </GestureHandlerRootView>
+          </SafeAreaProvider>
+        </ThemeProvider>
+      </CartProvider>
     </ErrorBoundary>
   );
 }
