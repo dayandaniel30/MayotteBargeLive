@@ -6,6 +6,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { PRICING_INFO, getDurationText } from "@/utils/pricing";
+import { useCart } from "@/hooks/useCart";
 
 export interface TicketOption {
   id: "pedestrian" | "vehicle" | "motorcycle";
@@ -66,6 +67,7 @@ export default function TicketPurchaseScreen({
 }: TicketPurchaseScreenProps = {}) {
   const { theme } = useTheme();
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
+  const { addToCart } = useCart();
 
   const handleSelectTicket = (ticket: TicketOption) => {
     // Extract numeric price for pedestrian
@@ -78,6 +80,14 @@ export default function TicketPurchaseScreen({
     } else if (ticket.id === "motorcycle") {
       price = 5;
     }
+    
+    addToCart({
+      id: ticket.id,
+      label: ticket.label,
+      price,
+      quantity: 1,
+    });
+
     if (onSelectTicket) {
       onSelectTicket(ticket.id, price);
     }

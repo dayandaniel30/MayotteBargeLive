@@ -10,6 +10,7 @@ import { useScreenInsets } from "@/hooks/useScreenInsets";
 import { Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { getCurrentAlert, getAlertSeverityType } from "@/utils/alerts";
 import { getSimulatedFerries, FerryPosition } from "@/utils/ferrySimulation";
+import { useCart } from "@/hooks/useCart";
 
 const DZAOUDZI_COORDS = { lat: 12.7769, lng: 45.2937 };
 const MAMOUDZOU_COORDS = { lat: 12.7835, lng: 45.2297 };
@@ -21,6 +22,7 @@ export default function MapScreen() {
   const [currentAlert, setCurrentAlert] = useState(getCurrentAlert());
   const [ferries, setFerries] = useState<FerryPosition[]>([]);
   const webViewRef = useRef<WebView>(null);
+  const { cart } = useCart();
 
   useEffect(() => {
     const alert = getCurrentAlert();
@@ -172,19 +174,33 @@ export default function MapScreen() {
         </View>
       )}
 
-      {/* Buy Button */}
+      {/* Cart Button */}
       <Pressable
         style={[
           styles.buyButton,
           {
             bottom: tabBarHeight + Spacing.xl,
-            backgroundColor: theme.primary,
+            backgroundColor: cart.length > 0 ? theme.primary : theme.textSecondary,
           },
         ]}
-        onPress={() => navigation.navigate("TicketsTab")}
+        onPress={() => navigation.navigate("CartTab")}
       >
         <Feather name="shopping-cart" size={20} color="#FFFFFF" />
-        <ThemedText style={styles.buyButtonText}>Acheter un billet</ThemedText>
+        <ThemedText style={styles.buyButtonText}>
+          Panier {cart.length > 0 && `(${cart.length})`}
+        </ThemedText>
+        {cart.length > 0 && (
+          <View
+            style={[
+              styles.badge,
+              { backgroundColor: theme.warning },
+            ]}
+          >
+            <ThemedText style={styles.badgeText}>
+              {cart.reduce((sum, item) => sum + item.quantity, 0)}
+            </ThemedText>
+          </View>
+        )}
       </Pressable>
     </View>
   );
@@ -248,6 +264,21 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 14,
+  },
+  badge: {
+    position: "absolute",
+    top: -8,
+    right: -8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
   },
   alertContainer: {
     position: "absolute",
