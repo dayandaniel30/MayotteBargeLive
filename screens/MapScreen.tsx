@@ -47,54 +47,72 @@ export default function MapScreen() {
     <html>
     <head>
       <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
       <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
       <style>
-        * { margin: 0; padding: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; }
-        #map { width: 100%; height: 100%; }
-        .info-popup { background: white; padding: 10px; border-radius: 4px; }
+        #map { width: 100%; height: 100%; touch-action: manipulation; }
+        .leaflet-container { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .leaflet-control-zoom { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .leaflet-control-zoom a { background: white; color: #333; font-size: 18px; font-weight: 600; height: 40px; width: 40px; line-height: 40px; }
+        .leaflet-control-zoom a:hover { background: #f5f5f5; }
+        .leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .leaflet-popup-tip-container { display: none; }
       </style>
     </head>
     <body>
       <div id="map"></div>
       <script>
-        const map = L.map('map').setView([12.78, 45.26], 12);
+        const map = L.map('map', {
+          zoomControl: true,
+          touchZoom: true,
+          doubleClickZoom: true,
+          scrollWheelZoom: true,
+          tap: true,
+          bounceAtZoomLimits: true,
+          inertia: true,
+          inertiaDeceleration: 3000,
+          inertiaMaxSpeed: 1500,
+        }).setView([12.78, 45.26], 12);
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors',
+          attribution: '© OpenStreetMap',
           maxZoom: 18,
+          minZoom: 10,
         }).addTo(map);
 
         // Dzaoudzi Marker
-        L.circleMarker([${DZAOUDZI_COORDS.lat}, ${DZAOUDZI_COORDS.lng}], {
+        const dzMarker = L.circleMarker([${DZAOUDZI_COORDS.lat}, ${DZAOUDZI_COORDS.lng}], {
           radius: 8,
           fillColor: '#2ECC71',
           color: '#fff',
           weight: 2,
           opacity: 1,
           fillOpacity: 0.8
-        }).bindPopup('Dzaoudzi<br/>Petite-Terre').addTo(map);
+        }).bindPopup('<b>Dzaoudzi</b><br/>Petite-Terre', { closeButton: false }).addTo(map);
 
         // Mamoudzou Marker
-        L.circleMarker([${MAMOUDZOU_COORDS.lat}, ${MAMOUDZOU_COORDS.lng}], {
+        const mmMarker = L.circleMarker([${MAMOUDZOU_COORDS.lat}, ${MAMOUDZOU_COORDS.lng}], {
           radius: 8,
           fillColor: '#2ECC71',
           color: '#fff',
           weight: 2,
           opacity: 1,
           fillOpacity: 0.8
-        }).bindPopup('Mamoudzou<br/>Grande-Terre').addTo(map);
+        }).bindPopup('<b>Mamoudzou</b><br/>Grande-Terre', { closeButton: false }).addTo(map);
 
         // Route Line
-        const routeLine = L.polyline([
+        L.polyline([
           [${DZAOUDZI_COORDS.lat}, ${DZAOUDZI_COORDS.lng}],
           [${MAMOUDZOU_COORDS.lat}, ${MAMOUDZOU_COORDS.lng}]
         ], {
           color: '#2ECC71',
           weight: 3,
           opacity: 0.5,
-          dashArray: '5, 5'
+          dashArray: '5, 5',
+          interactive: false
         }).addTo(map);
 
         ${ferryLat !== null && ferryLng !== null ? `
@@ -106,8 +124,12 @@ export default function MapScreen() {
           weight: 2,
           opacity: 1,
           fillOpacity: 1
-        }).bindPopup('Barge en route').addTo(map);
+        }).bindPopup('<b>Barge en route</b>', { closeButton: false }).addTo(map);
         ` : ''}
+
+        // Fit bounds to show both terminals
+        const group = new L.featureGroup([dzMarker, mmMarker]);
+        map.fitBounds(group.getBounds().pad(0.1));
       </script>
     </body>
     </html>
