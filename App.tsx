@@ -15,6 +15,7 @@ import SplashScreen from "@/screens/SplashScreen";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getAuthUser, login, signup, logout, User } from "@/utils/auth";
 import { ThemeProvider } from "@/hooks/ThemeContext";
+import { CartProvider } from "@/hooks/useCart";
 
 const Stack = createNativeStackNavigator();
 
@@ -72,25 +73,28 @@ export default function App() {
   if (showSplash) {
     return (
       <ErrorBoundary>
-        <ThemeProvider>
-          <SafeAreaProvider>
-            <GestureHandlerRootView style={styles.root}>
-              <SplashScreen onFinish={handleSplashFinish} />
-              <StatusBar style="auto" />
-            </GestureHandlerRootView>
-          </SafeAreaProvider>
-        </ThemeProvider>
+        <CartProvider>
+          <ThemeProvider>
+            <SafeAreaProvider>
+              <GestureHandlerRootView style={styles.root}>
+                <SplashScreen onFinish={handleSplashFinish} />
+                <StatusBar style="auto" />
+              </GestureHandlerRootView>
+            </SafeAreaProvider>
+          </ThemeProvider>
+        </CartProvider>
       </ErrorBoundary>
     );
   }
 
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <SafeAreaProvider>
-          <GestureHandlerRootView style={styles.root}>
-            <KeyboardProvider>
-              <NavigationContainer>
+      <CartProvider>
+        <ThemeProvider>
+          <SafeAreaProvider>
+            <GestureHandlerRootView style={styles.root}>
+              <KeyboardProvider>
+                <NavigationContainer>
               <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {!user ? (
                   <Stack.Screen
