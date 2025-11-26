@@ -56,14 +56,14 @@ const TICKET_OPTIONS: TicketOption[] = [
 ];
 
 interface TicketPurchaseScreenProps {
-  onSelectTicket: (ticketId: string, price: number) => void;
-  onClose: () => void;
+  onSelectTicket?: (ticketId: string, price: number) => void;
+  onClose?: () => void;
 }
 
 export default function TicketPurchaseScreen({
   onSelectTicket,
   onClose,
-}: TicketPurchaseScreenProps) {
+}: TicketPurchaseScreenProps = {}) {
   const { theme } = useTheme();
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
 
@@ -78,7 +78,9 @@ export default function TicketPurchaseScreen({
     } else if (ticket.id === "motorcycle") {
       price = 5;
     }
-    onSelectTicket(ticket.id, price);
+    if (onSelectTicket) {
+      onSelectTicket(ticket.id, price);
+    }
   };
 
   return (
@@ -86,9 +88,11 @@ export default function TicketPurchaseScreen({
       <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
         {/* Header */}
         <View style={styles.header}>
-          <Pressable onPress={onClose} style={styles.closeButton}>
-            <Feather name="x" size={28} color={theme.text} />
-          </Pressable>
+          {onClose && (
+            <Pressable onPress={onClose} style={styles.closeButton}>
+              <Feather name="x" size={28} color={theme.text} />
+            </Pressable>
+          )}
           <ThemedText style={[styles.title, Typography.h1]}>
             Acheter un billet
           </ThemedText>
