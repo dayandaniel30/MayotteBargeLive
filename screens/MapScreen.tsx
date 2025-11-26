@@ -173,23 +173,6 @@ export default function MapScreen() {
         <Feather name="shopping-cart" size={20} color="#FFFFFF" />
         <ThemedText style={styles.buyButtonText}>Acheter un billet</ThemedText>
       </Pressable>
-
-      {/* Alert Banner */}
-      {currentAlert && (
-        <View
-          style={[
-            styles.alertContainer,
-            {
-              top: headerHeight + Spacing.lg,
-            },
-          ]}
-        >
-          <AlertBanner
-            message={currentAlert.message}
-            type={getAlertSeverityType(currentAlert.severity)}
-          />
-        </View>
-      )}
     </View>
   );
 }
