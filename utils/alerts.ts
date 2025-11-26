@@ -54,10 +54,7 @@ const SAMPLE_ALERTS: AlertData[] = [
 
 export function getCurrentAlert(): AlertData | null {
   const activeAlerts = SAMPLE_ALERTS.filter((alert) => alert.active);
-  if (activeAlerts.length === 0) {
-    return SAMPLE_ALERTS[0];
-  }
-  return activeAlerts[0];
+  return activeAlerts.length > 0 ? activeAlerts[0] : null;
 }
 
 export function getAlertSeverityType(
