@@ -8,6 +8,7 @@ import SchedulesScreen from "@/screens/SchedulesScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import TicketPurchaseScreen from "@/screens/TicketPurchaseScreen";
 import CartScreen from "@/screens/CartScreen";
+import TransportDemoScreen from "@/screens/TransportDemoScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { HeaderTitle } from "@/components/HeaderTitle";
 import { getCommonScreenOptions } from "./screenOptions";
@@ -18,6 +19,7 @@ export type MainTabParamList = {
   SchedulesTab: undefined;
   TicketsTab: undefined;
   CartTab: undefined;
+  TransportDemoTab: undefined;
   SettingsTab: undefined;
 };
 
@@ -107,6 +109,17 @@ export default function MainTabNavigator({
           headerTransparent: false,
           tabBarIcon: ({ color, size }) => (
             <Feather name="shopping-cart" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="TransportDemoTab"
+        component={TransportDemoScreen}
+        options={{
+          title: "Transport",
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="navigation" size={size} color={color} />
           ),
         }}
       />
